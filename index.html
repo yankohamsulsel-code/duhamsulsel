@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pengaduan & Kegiatan - DUHAM SULSEL</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for CSV Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .sidebar-item-active { background-color: #0284c7; color: white; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginSection" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100 transition-all">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid font-bold text-3xl fa-shield-halved"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Sistem Informasi Pengaduan</h2>
+                <p class="text-sm text-slate-500 mt-1">Duhamsulsel Portal Access</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="username" required placeholder="Masukkan Username" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="password" required placeholder="Masukkan Password" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition text-sm">
+                    </div>
+                </div>
+                <div id="loginError" class="text-red-500 text-xs hidden text-center font-medium">Username atau password salah!</div>
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand-500/30 transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Dashboard
+                </button>
+            </form>
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-400">
+                &copy; 2026 Duhamsulsel - Hak Asasi Manusia & Pengaduan Masyarakat
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD APP -->
+    <div id="appSection" class="hidden min-h-screen flex flex-col md:flex-row">
+
+        <!-- SIDEBAR -->
+        <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between border-r border-slate-800">
+            <div>
+                <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+                    <div class="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-base leading-tight">DUHAM SULSEL</h1>
+                        <span class="text-xs text-slate-400">Dashboard Akses Publik</span>
+                    </div>
+                </div>
+
+                <nav class="p-4 space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-btn sidebar-item-active w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition">
+                        <i class="fa-solid fa-chart-pie w-5"></i> Dashboard Overview
+                    </button>
+                    <button onclick="switchTab('pengaduan')" id="nav-pengaduan" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+                        <i class="fa-solid fa-file-invoice w-5"></i> Data Pengaduan
+                    </button>
+                    <button onclick="switchTab('kegiatan')" id="nav-kegiatan" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white font-medium text-sm transition">
+                        <i class="fa-solid fa-list-check w-5"></i> Penginputan Kegiatan
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-3 px-2">
+                    <div class="w-8 h-8 bg-brand-500/20 text-brand-400 rounded-full flex items-center justify-center font-semibold text-xs">
+                        DH
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-white truncate">Duhamsulsel</p>
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block"></span> Online</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600/20 hover:text-red-400 text-slate-400 rounded-xl text-xs font-medium transition">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar / Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+            <!-- TOPBAR -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
+                <div>
+                    <h2 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
+                    <p class="text-xs text-slate-500">Statistik Pengaduan & Rekapitulasi Kegiatan Duhamsulsel</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="shareDashboard()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> Bagikan
+                    </button>
+                    <div class="relative">
+                        <button onclick="toggleExportMenu()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-download"></i> Export Data <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                        <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-40 text-xs">
+                            <button onclick="exportExcel()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700"><i class="fa-solid fa-file-excel text-emerald-600"></i> Export Format Excel (.xlsx)</button>
+                            <button onclick="exportCSVData()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700"><i class="fa-solid fa-file-csv text-blue-600"></i> Export Format CSV (.csv)</button>
+                            <button onclick="exportPDF()" class="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700"><i class="fa-solid fa-file-pdf text-red-600"></i> Cetak / Export PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-6 space-y-6">
+
+                <!-- TAB 1: DASHBOARD OVERVIEW -->
+                <div id="tab-dashboard-content" class="space-y-6">
+                    <!-- KPI CARDS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-folder-open"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Permohonan</p>
+                                <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-blue-600 font-medium"><i class="fa-solid fa-circle-info"></i> Berkas Pengaduan</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Selesai</p>
+                                <h3 id="statSelesai" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-emerald-600 font-medium" id="statSelesaiPct">0% Terkelola</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-spinner"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dalam Proses</p>
+                                <h3 id="statProses" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-amber-600 font-medium">Penanganan Aktif</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-box-archive"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Arsip</p>
+                                <h3 id="statArsip" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-slate-500 font-medium">Telah Diarsipkan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS GRID -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Chart Klasifikasi -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-brand-600"></i> Klasifikasi Permasalahan
+                                </h3>
+                                <span class="text-xs text-slate-400">Kategori HAM</span>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="chartKlasifikasi"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart Status -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-pie text-emerald-600"></i> Status Penanganan
+                                </h3>
+                                <span class="text-xs text-slate-400">Arsip / Proses / Selesai</span>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="chartStatus"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Instansi -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-building-user text-amber-600"></i> Sebaran Pengaduan per Instansi Terkait (Multiple Multi-Split "/")
+                            </h3>
+                            <span class="text-xs text-slate-400">Terdeteksi per Pihak</span>
+                        </div>
+                        <div class="h-72 relative">
+                            <canvas id="chartInstansi"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DATA PENGADUAN -->
+                <div id="tab-pengaduan-content" class="hidden space-y-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div class="relative w-full sm:w-64">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="text" id="searchPengaduan" onkeyup="filterPengaduan()" placeholder="Cari pelapor, instansi, masalah..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                </div>
+                                <select id="filterKlasifikasi" onchange="filterPengaduan()" class="py-2 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-600">
+                                    <option value="">Semua Klasifikasi</option>
+                                </select>
+                                <select id="filterStatus" onchange="filterPengaduan()" class="py-2 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none text-slate-600">
+                                    <option value="">Semua Status</option>
+                                    <option value="Selesai">Selesai</option>
+                                    <option value="Proses">Proses</option>
+                                    <option value="Arsip">Arsip</option>
+                                </select>
+                            </div>
+
+                            <button onclick="openModalPengaduan()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-plus"></i> Tambah Permohonan Baru
+                            </button>
+                        </div>
+
+                        <!-- TABLE PENGADUAN -->
+                        <div class="overflow-x-auto rounded-xl border border-slate-100">
+                            <table class="w-full text-left text-xs text-slate-700">
+                                <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3">No</th>
+                                        <th class="p-3">Tgl Permohonan</th>
+                                        <th class="p-3">Pelapor / Pihak & Sumber</th>
+                                        <th class="p-3">Pokok Permasalahan & Klasifikasi</th>
+                                        <th class="p-3">Instansi Terkait</th>
+                                        <th class="p-3">Jenis & Progres Tindak Lanjut</th>
+                                        <th class="p-3">Hasil</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablePengaduanBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: PENGINPUTAN KEGIATAN -->
+                <div id="tab-kegiatan-content" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Kegiatan</p>
+                                <h3 id="statTotalKegiatan" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-slate-500">Program Terjadwal</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-sack-dollar"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Anggaran Terserap</p>
+                                <h3 id="statTotalAnggaran" class="text-xl font-bold text-slate-800">Rp 0</h3>
+                                <span class="text-[11px] text-emerald-600 font-medium">Realisasi Keuangan</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">LPJ Selesai</p>
+                                <h3 id="statLPJSelesai" class="text-2xl font-bold text-slate-800">0</h3>
+                                <span class="text-[11px] text-purple-600 font-medium">Laporan Pertanggungjawaban</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-list text-brand-600"></i> Daftar & Penginputan Kegiatan
+                            </h3>
+                            <button onclick="openModalKegiatan()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-plus"></i> Input Kegiatan Baru
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-100">
+                            <table class="w-full text-left text-xs text-slate-700">
+                                <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3">No</th>
+                                        <th class="p-3">Nama Kegiatan</th>
+                                        <th class="p-3">Tanggal Kegiatan</th>
+                                        <th class="p-3">Tempat / Tujuan</th>
+                                        <th class="p-3">PIC / Pelaksana</th>
+                                        <th class="p-3">Anggaran Terserap</th>
+                                        <th class="p-3">Status LPJ</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableKegiatanBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL INPUT/EDIT PENGADUAN -->
+    <div id="modalPengaduan" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="modalPengaduanTitle" class="font-bold text-slate-800 text-base">Tambah Permohonan Pengaduan</h3>
+                <button onclick="closeModalPengaduan()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="formPengaduan" onsubmit="savePengaduan(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="p_id">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Tanggal Permohonan</label>
+                        <input type="date" id="p_tanggal" required class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Sumber Pengaduan</label>
+                        <input type="text" id="p_sumber" placeholder="Contoh: Surat / Pos / Tatap Muka" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nama Pelapor / Pihak</label>
+                    <input type="text" id="p_pelapor" required placeholder="Nama individu, organisasi, atau kelompok" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Pokok Permasalahan</label>
+                    <textarea id="p_pokok" rows="2" required placeholder="Uraian singkat pokok masalah..." class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Klasifikasi</label>
+                        <input type="text" id="p_klasifikasi" required placeholder="Hak Atas Tanah / Pelayanan Publik / dll" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Instansi Terkait (Pisahkan dengan "/")</label>
+                        <input type="text" id="p_instansi" required placeholder="Contoh: BPN / Pemda Bulukumba / Kepolisian" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Jenis Tindak Lanjut (Checklist)</label>
+                    <div class="flex flex-wrap items-center gap-4 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="tl_telaah" value="Telaah" class="rounded text-brand-600 focus:ring-brand-500">
+                            <span>Telaah</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="tl_koordinasi" value="Koordinasi dan Klarifikasi" class="rounded text-brand-600 focus:ring-brand-500">
+                            <span>Koordinasi dan Klarifikasi</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="tl_rekomendasi" value="Rekomendasi" class="rounded text-brand-600 focus:ring-brand-500">
+                            <span>Rekomendasi</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Penjelasan Progres Tindak Lanjut</label>
+                    <textarea id="p_progres" rows="2" placeholder="Penjelasan perkembangan penanganan..." class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Hasil</label>
+                        <input type="text" id="p_hasil" placeholder="Hasil/Kesimpulan akhir" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Status</label>
+                        <select id="p_status" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="Proses">Proses</option>
+                            <option value="Selesai">Selesai</option>
+                            <option value="Arsip">Arsip</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModalPengaduan()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL INPUT/EDIT KEGIATAN -->
+    <div id="modalKegiatan" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="modalKegiatanTitle" class="font-bold text-slate-800 text-base">Input Kegiatan Baru</h3>
+                <button onclick="closeModalKegiatan()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="formKegiatan" onsubmit="saveKegiatan(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="k_id">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Nama Kegiatan</label>
+                    <input type="text" id="k_nama" required placeholder="Contoh: Sosialisasi HAM di Kab. Gowa" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Tanggal Kegiatan</label>
+                    <input type="date" id="k_tanggal" required class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Tempat / Tujuan</label>
+                    <input type="text" id="k_tempat" required placeholder="Contoh: Makassar / Kantor Bupati" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">PIC / Pelaksana</label>
+                    <input type="text" id="k_pic" required placeholder="Contoh: Tim Pelayanan HAM Sulsel" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Anggaran Terserap (Rp)</label>
+                    <input type="number" id="k_anggaran" required min="0" placeholder="Contoh: 15000000" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Status LPJ</label>
+                    <select id="k_status_lpj" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="Proses">Proses</option>
+                        <option value="Selesai">Selesai</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModalKegiatan()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700">Simpan Kegiatan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // DATA PENGADUAN
+        let dataPengaduan = [
+            {
+                no: 1,
+                tanggal_permohonan: "2026-08-01",
+                nama_pelapor: "Masyarakat Adat Bulukumba",
+                sumber: "Surat / Pos",
+                pokok_permasalahan: "Sengketa Fasilitas Umum dan Hak Lahan Wilayah Adat",
+                klasifikasi: "Hak Atas Tanah",
+                instansi_terkait: "BPN / Pemda Bulukumba",
+                jenis_tindak_lanjut: "Telaah, Koordinasi dan Klarifikasi",
+                penjelasan_progres: "Pemeriksaan dokumen awal serta verifikasi berkas lapangan.",
+                hasil: "Menunggu klarifikasi BPN",
+                status: "Proses"
+            },
+            {
+                no: 2,
+                tanggal_permohonan: "2026-08-03",
+                nama_pelapor: "LBH Makassar",
+                sumber: "Tatap Muka",
+                pokok_permasalahan: "Dugaan Maladministrasi Layanan Publik Wilayah Pesisir",
+                klasifikasi: "Pelayanan Publik",
+                instansi_terkait: "Pemda Makassar / Kepolisian",
+                jenis_tindak_lanjut: "Koordinasi dan Klarifikasi",
+                penjelasan_progres: "Rapat koordinasi dengan dinas terkait telah dilaksanakan.",
+                hasil: "Selesai ditindaklanjuti",
+                status: "Selesai"
+            }
+        ];
+
+        let dataKegiatan = [
+            { id: 1, nama: "Sosialisasi & Edukasi Kesadaran HAM Masyarakat", tanggal: "2026-07-15", tempat: "Kota Makassar", pic: "Tim Pelayanan HAM", anggaran: 18500000, status_lpj: "Selesai" },
+            { id: 2, nama: "Monitoring & Evaluasi Pos Pengaduan Wilayah Selatan", tanggal: "2026-08-02", tempat: "Kabupaten Bulukumba", pic: "Tim Monitoring", anggaran: 22500000, status_lpj: "Proses" }
+        ];
+
+        let chartKlasifikasiInstance = null;
+        let chartStatusInstance = null;
+        let chartInstansiInstance = null;
+
+        // LOGIN SYSTEM
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+
+            if (u === 'Duhamsulsel' && p === 'beran1') {
+                sessionStorage.setItem('authenticated', 'true');
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                initApp();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('authenticated');
+            location.reload();
+        }
+
+        // INITIALIZE APP
+        function initApp() {
+            const savedPengaduan = localStorage.getItem('duham_pengaduan_v2');
+            if (savedPengaduan) dataPengaduan = JSON.parse(savedPengaduan);
+
+            const savedKegiatan = localStorage.getItem('duham_kegiatan');
+            if (savedKegiatan) dataKegiatan = JSON.parse(savedKegiatan);
+
+            renderAll();
+        }
+
+        function saveLocalPengaduan() {
+            localStorage.setItem('duham_pengaduan_v2', JSON.stringify(dataPengaduan));
+        }
+
+        function saveLocalKegiatan() {
+            localStorage.setItem('duham_kegiatan', JSON.stringify(dataKegiatan));
+        }
+
+        // RENDER ALL DATA
+        function renderAll() {
+            renderKPIs();
+            renderCharts();
+            renderTablePengaduan();
+            renderTableKegiatan();
+            populateFilters();
+        }
+
+        // TAB SWITCHING
+        function switchTab(tab) {
+            ['dashboard', 'pengaduan', 'kegiatan'].forEach(t => {
+                document.getElementById(`tab-${t}-content`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                btn.classList.remove('sidebar-item-active');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`tab-${tab}-content`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tab}`);
+            activeBtn.classList.add('sidebar-item-active');
+            activeBtn.classList.remove('text-slate-400');
+
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'pengaduan': 'Informasi & Data Permohonan Pengaduan',
+                'kegiatan': 'Penginputan & Rekapitulasi Kegiatan'
+            };
+            document.getElementById('pageTitle').innerText = titles[tab];
+        }
+
+        // RENDER KPIS
+        function renderKPIs() {
+            const total = dataPengaduan.length;
+            const selesai = dataPengaduan.filter(d => (d.status || '').toLowerCase().trim() === 'selesai').length;
+            const proses = dataPengaduan.filter(d => (d.status || '').toLowerCase().trim() === 'proses').length;
+            const arsip = dataPengaduan.filter(d => (d.status || '').toLowerCase().trim() === 'arsip').length;
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statSelesai').innerText = selesai;
+            document.getElementById('statProses').innerText = proses;
+            document.getElementById('statArsip').innerText = arsip;
+
+            const pct = total > 0 ? Math.round((selesai / total) * 100) : 0;
+            document.getElementById('statSelesaiPct').innerText = `${pct}% Terkelola Selesai`;
+
+            // Kegiatan KPIs
+            const totalKeg = dataKegiatan.length;
+            const totalAnggaran = dataKegiatan.reduce((acc, curr) => acc + Number(curr.anggaran || 0), 0);
+            const lpjSelesai = dataKegiatan.filter(k => k.status_lpj.toLowerCase() === 'selesai').length;
+
+            document.getElementById('statTotalKegiatan').innerText = totalKeg;
+            document.getElementById('statTotalAnggaran').innerText = 'Rp ' + totalAnggaran.toLocaleString('id-ID');
+            document.getElementById('statLPJSelesai').innerText = lpjSelesai;
+        }
+
+        // POPULATE FILTERS
+        function populateFilters() {
+            const klasSelect = document.getElementById('filterKlasifikasi');
+            const klasifikasiList = [...new Set(dataPengaduan.map(d => d.klasifikasi).filter(Boolean))];
+            klasSelect.innerHTML = '<option value="">Semua Klasifikasi</option>' + klasifikasiList.map(k => `<option value="${k}">${k}</option>`).join('');
+        }
+
+        // RENDER CHARTS
+        function renderCharts() {
+            const klasMap = {};
+            dataPengaduan.forEach(d => {
+                const k = d.klasifikasi || 'Lain-lain';
+                klasMap[k] = (klasMap[k] || 0) + 1;
+            });
+
+            const statMap = { 'Selesai': 0, 'Proses': 0, 'Arsip': 0 };
+            dataPengaduan.forEach(d => {
+                const st = (d.status || 'Proses').trim();
+                statMap[st] = (statMap[st] || 0) + 1;
+            });
+
+            // MULTI-SPLIT INSTANSI TERKAIT BY SEPARATOR "/" ATAS KOMA ","
+            const instMap = {};
+            dataPengaduan.forEach(d => {
+                const rawInst = d.instansi_terkait || 'Lainnya';
+                // Split berdasarkan karakter / atau ,
+                const parts = rawInst.split(/[\/,]/);
+                parts.forEach(part => {
+                    const cleanName = part.trim();
+                    if (cleanName.length > 0) {
+                        instMap[cleanName] = (instMap[cleanName] || 0) + 1;
+                    }
+                });
+            });
+
+            if (chartKlasifikasiInstance) chartKlasifikasiInstance.destroy();
+            if (chartStatusInstance) chartStatusInstance.destroy();
+            if (chartInstansiInstance) chartInstansiInstance.destroy();
+
+            // 1. Chart Klasifikasi
+            chartKlasifikasiInstance = new Chart(document.getElementById('chartKlasifikasi'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(klasMap),
+                    datasets: [{
+                        label: 'Jumlah Pengaduan',
+                        data: Object.values(klasMap),
+                        backgroundColor: '#0284c7',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+
+            // 2. Chart Status
+            chartStatusInstance = new Chart(document.getElementById('chartStatus'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statMap),
+                    datasets: [{
+                        data: Object.values(statMap),
+                        backgroundColor: ['#10b981', '#f59e0b', '#64748b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+
+            // 3. Chart Instansi (Terpisah Otomatis)
+            chartInstansiInstance = new Chart(document.getElementById('chartInstansi'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(instMap),
+                    datasets: [{
+                        label: 'Jumlah Pengaduan Terkait',
+                        data: Object.values(instMap),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        // RENDER TABLE PENGADUAN
+        function renderTablePengaduan(filtered = null) {
+            const data = filtered || dataPengaduan;
+            const tbody = document.getElementById('tablePengaduanBody');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">Tidak ada data pengaduan ditemukan.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((d, index) => {
+                let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+                const st = (d.status || '').toLowerCase().trim();
+                if (st === 'selesai') badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                else if (st === 'arsip') badgeClass = "bg-slate-100 text-slate-700 border-slate-300";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-500">${d.no || index + 1}</td>
+                        <td class="p-3 font-medium text-slate-800 whitespace-nowrap">${d.tanggal_permohonan || '-'}</td>
+                        <td class="p-3">
+                            <div class="font-semibold text-slate-800">${d.nama_pelapor || '-'}</div>
+                            <div class="text-[10px] text-slate-400">Sumber: ${d.sumber || '-'}</div>
+                        </td>
+                        <td class="p-3">
+                            <div class="font-medium text-slate-800 max-w-xs">${d.pokok_permasalahan || '-'}</div>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium text-[10px]">${d.klasifikasi || '-'}</span>
+                        </td>
+                        <td class="p-3 font-medium text-slate-700">${d.instansi_terkait || '-'}</td>
+                        <td class="p-3">
+                            <div class="font-semibold text-slate-700 text-[11px]">${d.jenis_tindak_lanjut || '-'}</div>
+                            <div class="text-[10px] text-slate-500 max-w-xs mt-0.5">${d.penjelasan_progres || '-'}</div>
+                        </td>
+                        <td class="p-3 font-medium text-slate-700">${d.hasil || '-'}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded-lg border font-medium text-[11px] ${badgeClass}">${d.status || 'Proses'}</span></td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="editPengaduan(${index})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deletePengaduan(${index})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // FILTER PENGADUAN
+        function filterPengaduan() {
+            const query = document.getElementById('searchPengaduan').value.toLowerCase();
+            const klas = document.getElementById('filterKlasifikasi').value;
+            const stat = document.getElementById('filterStatus').value;
+
+            const filtered = dataPengaduan.filter(d => {
+                const matchQuery = (d.nama_pelapor || '').toLowerCase().includes(query) || 
+                                   (d.pokok_permasalahan || '').toLowerCase().includes(query) || 
+                                   (d.instansi_terkait || '').toLowerCase().includes(query);
+                const matchKlas = !klas || d.klasifikasi === klas;
+                const matchStat = !stat || (d.status || '').toLowerCase().trim() === stat.toLowerCase().trim();
+                return matchQuery && matchKlas && matchStat;
+            });
+
+            renderTablePengaduan(filtered);
+        }
+
+        // CRUD PENGADUAN
+        function openModalPengaduan() {
+            document.getElementById('formPengaduan').reset();
+            document.getElementById('p_id').value = '';
+            document.getElementById('modalPengaduanTitle').innerText = 'Tambah Permohonan Baru';
+            document.getElementById('modalPengaduan').classList.remove('hidden');
+        }
+
+        function closeModalPengaduan() {
+            document.getElementById('modalPengaduan').classList.add('hidden');
+        }
+
+        function savePengaduan(e) {
+            e.preventDefault();
+            const idx = document.getElementById('p_id').value;
+
+            const selectedTL = [];
+            if (document.getElementById('tl_telaah').checked) selectedTL.push('Telaah');
+            if (document.getElementById('tl_koordinasi').checked) selectedTL.push('Koordinasi dan Klarifikasi');
+            if (document.getElementById('tl_rekomendasi').checked) selectedTL.push('Rekomendasi');
+
+            const newItem = {
+                no: idx !== '' ? dataPengaduan[idx].no : dataPengaduan.length + 1,
+                tanggal_permohonan: document.getElementById('p_tanggal').value,
+                nama_pelapor: document.getElementById('p_pelapor').value,
+                sumber: document.getElementById('p_sumber').value,
+                pokok_permasalahan: document.getElementById('p_pokok').value,
+                klasifikasi: document.getElementById('p_klasifikasi').value,
+                instansi_terkait: document.getElementById('p_instansi').value,
+                jenis_tindak_lanjut: selectedTL.join(', ') || 'Telaah',
+                penjelasan_progres: document.getElementById('p_progres').value,
+                hasil: document.getElementById('p_hasil').value,
+                status: document.getElementById('p_status').value
+            };
+
+            if (idx !== '') {
+                dataPengaduan[idx] = newItem;
+            } else {
+                dataPengaduan.unshift(newItem);
+            }
+
+            saveLocalPengaduan();
+            renderAll();
+            closeModalPengaduan();
+            Swal.fire({ title: 'Berhasil!', text: 'Data pengaduan tersimpan.', icon: 'success', timer: 1500, showConfirmButton: false });
+        }
+
+        function editPengaduan(index) {
+            const item = dataPengaduan[index];
+            if (!item) return;
+
+            document.getElementById('p_id').value = index;
+            document.getElementById('p_tanggal').value = item.tanggal_permohonan || '';
+            document.getElementById('p_pelapor').value = item.nama_pelapor || '';
+            document.getElementById('p_sumber').value = item.sumber || '';
+            document.getElementById('p_pokok').value = item.pokok_permasalahan || '';
+            document.getElementById('p_klasifikasi').value = item.klasifikasi || '';
+            document.getElementById('p_instansi').value = item.instansi_terkait || '';
+            document.getElementById('p_progres').value = item.penjelasan_progres || '';
+            document.getElementById('p_hasil').value = item.hasil || '';
+            document.getElementById('p_status').value = item.status || 'Proses';
+
+            const tl = item.jenis_tindak_lanjut || '';
+            document.getElementById('tl_telaah').checked = tl.includes('Telaah');
+            document.getElementById('tl_koordinasi').checked = tl.includes('Koordinasi');
+            document.getElementById('tl_rekomendasi').checked = tl.includes('Rekomendasi');
+
+            document.getElementById('modalPengaduanTitle').innerText = 'Edit Permohonan Pengaduan';
+            document.getElementById('modalPengaduan').classList.remove('hidden');
+        }
+
+        function deletePengaduan(index) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: 'Apakah Anda yakin ingin menghapus data permohonan ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dataPengaduan.splice(index, 1);
+                    saveLocalPengaduan();
+                    renderAll();
+                    Swal.fire('Terhapus!', 'Data pengaduan telah dihapus.', 'success');
+                }
+            });
+        }
+
+        // RENDER TABLE KEGIATAN
+        function renderTableKegiatan() {
+            const tbody = document.getElementById('tableKegiatanBody');
+            if (dataKegiatan.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Belum ada kegiatan yang diinputkan.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = dataKegiatan.map((k, index) => {
+                let badgeClass = k.status_lpj.toLowerCase() === 'selesai' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-500">${index + 1}</td>
+                        <td class="p-3 font-semibold text-slate-800">${k.nama}</td>
+                        <td class="p-3 text-slate-600 font-medium">${k.tanggal}</td>
+                        <td class="p-3 text-slate-600">${k.tempat}</td>
+                        <td class="p-3 text-slate-600 font-medium">${k.pic}</td>
+                        <td class="p-3 font-semibold text-slate-800">Rp ${Number(k.anggaran).toLocaleString('id-ID')}</td>
+                        <td class="p-3"><span class="px-2.5 py-1 rounded-lg border font-medium text-[11px] ${badgeClass}">${k.status_lpj}</span></td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="editKegiatan(${k.id})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteKegiatan(${k.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // CRUD KEGIATAN
+        function openModalKegiatan() {
+            document.getElementById('formKegiatan').reset();
+            document.getElementById('k_id').value = '';
+            document.getElementById('modalKegiatanTitle').innerText = 'Input Kegiatan Baru';
+            document.getElementById('modalKegiatan').classList.remove('hidden');
+        }
+
+        function closeModalKegiatan() {
+            document.getElementById('modalKegiatan').classList.add('hidden');
+        }
+
+        function saveKegiatan(e) {
+            e.preventDefault();
+            const id = document.getElementById('k_id').value;
+            const newItem = {
+                id: id ? parseInt(id) : Date.now(),
+                nama: document.getElementById('k_nama').value,
+                tanggal: document.getElementById('k_tanggal').value,
+                tempat: document.getElementById('k_tempat').value,
+                pic: document.getElementById('k_pic').value,
+                anggaran: parseFloat(document.getElementById('k_anggaran').value) || 0,
+                status_lpj: document.getElementById('k_status_lpj').value
+            };
+
+            if (id) {
+                const idx = dataKegiatan.findIndex(k => k.id == id);
+                if (idx !== -1) dataKegiatan[idx] = newItem;
+            } else {
+                dataKegiatan.unshift(newItem);
+            }
+
+            saveLocalKegiatan();
+            renderAll();
+            closeModalKegiatan();
+            Swal.fire({ title: 'Berhasil!', text: 'Data kegiatan tersimpan.', icon: 'success', timer: 1500, showConfirmButton: false });
+        }
+
+        function editKegiatan(id) {
+            const item = dataKegiatan.find(k => k.id == id);
+            if (!item) return;
+
+            document.getElementById('k_id').value = item.id;
+            document.getElementById('k_nama').value = item.nama;
+            document.getElementById('k_tanggal').value = item.tanggal;
+            document.getElementById('k_tempat').value = item.tempat;
+            document.getElementById('k_pic').value = item.pic;
+            document.getElementById('k_anggaran').value = item.anggaran;
+            document.getElementById('k_status_lpj').value = item.status_lpj;
+
+            document.getElementById('modalKegiatanTitle').innerText = 'Edit Data Kegiatan';
+            document.getElementById('modalKegiatan').classList.remove('hidden');
+        }
+
+        function deleteKegiatan(id) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: 'Apakah Anda yakin ingin menghapus data kegiatan ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    dataKegiatan = dataKegiatan.filter(k => k.id != id);
+                    saveLocalKegiatan();
+                    renderAll();
+                    Swal.fire('Terhapus!', 'Data kegiatan telah dihapus.', 'success');
+                }
+            });
+        }
+
+        // EXPORT & SHARE FUNCTIONS
+        function toggleExportMenu() {
+            document.getElementById('exportMenu').classList.toggle('hidden');
+        }
+
+        function exportExcel() {
+            const wb = XLSX.utils.book_new();
+
+            const wsPengaduan = XLSX.utils.json_to_sheet(dataPengaduan.map(d => ({
+                'No': d.no,
+                'Tanggal Permohonan': d.tanggal_permohonan,
+                'Nama Pelapor/Pihak': d.nama_pelapor,
+                'Sumber': d.sumber,
+                'Pokok Permasalahan': d.pokok_permasalahan,
+                'Klasifikasi': d.klasifikasi,
+                'Instansi Terkait': d.instansi_terkait,
+                'Jenis Tindak Lanjut': d.jenis_tindak_lanjut,
+                'Penjelasan Progres Tindak Lanjut': d.penjelasan_progres,
+                'Hasil': d.hasil,
+                'Status': d.status
+            })));
+            XLSX.utils.book_append_sheet(wb, wsPengaduan, "Data Pengaduan");
+
+            const wsKegiatan = XLSX.utils.json_to_sheet(dataKegiatan.map((k, i) => ({
+                'No': i + 1,
+                'Nama Kegiatan': k.nama,
+                'Tanggal Kegiatan': k.tanggal,
+                'Tempat / Tujuan': k.tempat,
+                'PIC / Pelaksana': k.pic,
+                'Anggaran Terserap (Rp)': k.anggaran,
+                'Status LPJ': k.status_lpj
+            })));
+            XLSX.utils.book_append_sheet(wb, wsKegiatan, "Data Kegiatan");
+
+            XLSX.writeFile(wb, "Dashboard_Duhamsulsel_Report.xlsx");
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportCSVData() {
+            const csv = Papa.unparse(dataPengaduan);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", "Pengaduan_Duhamsulsel.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            document.getElementById('exportMenu').classList.add('hidden');
+        }
+
+        function exportPDF() {
+            document.getElementById('exportMenu').classList.add('hidden');
+            window.print();
+        }
+
+        function shareDashboard() {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Dashboard Pengaduan & Kegiatan - DUHAM SULSEL',
+                    text: 'Akses Portal Dashboard Statistik Pengaduan dan Penginputan Kegiatan Duhamsulsel',
+                    url: shareUrl
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                Swal.fire({
+                    title: 'Tautan Disalin!',
+                    text: 'Link dashboard telah disalin ke clipboard.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('authenticated') === 'true') {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                initApp();
+            }
+        });
+    </script>
+</body>
+</html>
