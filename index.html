@@ -1,19 +1,4 @@
 <!DOCTYPE html>
-async function saveLocalPengaduan() {
-    await fetch('/.netlify/functions/saveData', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'pengaduan', data: dataPengaduan })
-    });
-}
-
-async function saveLocalKegiatan() {
-    await fetch('/.netlify/functions/saveData', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'kegiatan', data: dataKegiatan })
-    });
-}
 <html lang="id">
 <head>
     <meta charset="UTF-8">
