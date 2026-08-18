@@ -4,18 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pengaduan & Kegiatan - DUHAM SULSEL</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse for CSV Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- SheetJS for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
         tailwind.config = {
@@ -44,7 +39,6 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen">
 
-    <!-- LOGIN SCREEN -->
     <div id="loginSection" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100 transition-all">
             <div class="text-center mb-6">
@@ -81,10 +75,8 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD APP -->
     <div id="appSection" class="hidden min-h-screen flex flex-col md:flex-row">
 
-        <!-- SIDEBAR -->
         <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between border-r border-slate-800">
             <div>
                 <div class="p-5 flex items-center gap-3 border-b border-slate-800">
@@ -117,7 +109,7 @@
                     </div>
                     <div class="overflow-hidden">
                         <p class="text-xs font-semibold text-white truncate">Duhamsulsel</p>
-                        <p class="text-[10px] text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block"></span> Online</p>
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block"></span> Cloud Synced</p>
                     </div>
                 </div>
                 <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600/20 hover:text-red-400 text-slate-400 rounded-xl text-xs font-medium transition">
@@ -126,10 +118,8 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
         <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
 
-            <!-- TOPBAR -->
             <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
                 <div>
                     <h2 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
@@ -155,9 +145,7 @@
 
             <div class="p-6 space-y-6">
 
-                <!-- TAB 1: DASHBOARD OVERVIEW -->
                 <div id="tab-dashboard-content" class="space-y-6">
-                    <!-- KPI CARDS -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
@@ -204,9 +192,7 @@
                         </div>
                     </div>
 
-                    <!-- CHARTS GRID -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Chart Klasifikasi -->
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -219,7 +205,6 @@
                             </div>
                         </div>
 
-                        <!-- Chart Status -->
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -233,7 +218,6 @@
                         </div>
                     </div>
 
-                    <!-- Chart Instansi -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -247,7 +231,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: DATA PENGADUAN -->
                 <div id="tab-pengaduan-content" class="hidden space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -272,7 +255,6 @@
                             </button>
                         </div>
 
-                        <!-- TABLE PENGADUAN -->
                         <div class="overflow-x-auto rounded-xl border border-slate-100">
                             <table class="w-full text-left text-xs text-slate-700">
                                 <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
@@ -289,14 +271,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tablePengaduanBody" class="divide-y divide-slate-100">
-                                    <!-- Dynamic content -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 3: PENGINPUTAN KEGIATAN -->
                 <div id="tab-kegiatan-content" class="hidden space-y-6">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
@@ -358,8 +338,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tableKegiatanBody" class="divide-y divide-slate-100">
-                                    <!-- Dynamic content -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </div>
@@ -369,7 +348,6 @@
         </main>
     </div>
 
-    <!-- MODAL INPUT/EDIT PENGADUAN -->
     <div id="modalPengaduan" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -457,7 +435,6 @@
         </div>
     </div>
 
-    <!-- MODAL INPUT/EDIT KEGIATAN -->
     <div id="modalKegiatan" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -501,42 +478,16 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT APP LOGIC -->
     <script>
-        // DATA PENGADUAN
-        let dataPengaduan = [
-            {
-                no: 1,
-                tanggal_permohonan: "2026-08-01",
-                nama_pelapor: "Masyarakat Adat Bulukumba",
-                sumber: "Surat / Pos",
-                pokok_permasalahan: "Sengketa Fasilitas Umum dan Hak Lahan Wilayah Adat",
-                klasifikasi: "Hak Atas Tanah",
-                instansi_terkait: "BPN / Pemda Bulukumba",
-                jenis_tindak_lanjut: "Telaah, Koordinasi dan Klarifikasi",
-                penjelasan_progres: "Pemeriksaan dokumen awal serta verifikasi berkas lapangan.",
-                hasil: "Menunggu klarifikasi BPN",
-                status: "Proses"
-            },
-            {
-                no: 2,
-                tanggal_permohonan: "2026-08-03",
-                nama_pelapor: "LBH Makassar",
-                sumber: "Tatap Muka",
-                pokok_permasalahan: "Dugaan Maladministrasi Layanan Publik Wilayah Pesisir",
-                klasifikasi: "Pelayanan Publik",
-                instansi_terkait: "Pemda Makassar / Kepolisian",
-                jenis_tindak_lanjut: "Koordinasi dan Klarifikasi",
-                penjelasan_progres: "Rapat koordinasi dengan dinas terkait telah dilaksanakan.",
-                hasil: "Selesai ditindaklanjuti",
-                status: "Selesai"
-            }
-        ];
+        // KONFIGURASI SUPABASE
+        const SUPABASE_URL = "https://hsmtcpspokicxwtfwnut.supabase.co";
+        // GANTI teks di bawah ini dengan anon public key dari Supabase Dashboard Anda
+        const SUPABASE_KEY = "PASTE_ANON_KEY_SUPABASE_ANDA_DI_SINI";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let dataKegiatan = [
-            { id: 1, nama: "Sosialisasi & Edukasi Kesadaran HAM Masyarakat", tanggal: "2026-07-15", tempat: "Kota Makassar", pic: "Tim Pelayanan HAM", anggaran: 18500000, status_lpj: "Selesai" },
-            { id: 2, nama: "Monitoring & Evaluasi Pos Pengaduan Wilayah Selatan", tanggal: "2026-08-02", tempat: "Kabupaten Bulukumba", pic: "Tim Monitoring", anggaran: 22500000, status_lpj: "Proses" }
-        ];
+        // DATA STATE
+        let dataPengaduan = [];
+        let dataKegiatan = [];
 
         let chartKlasifikasiInstance = null;
         let chartStatusInstance = null;
@@ -563,23 +514,39 @@
             location.reload();
         }
 
-        // INITIALIZE APP
-        function initApp() {
-            const savedPengaduan = localStorage.getItem('duham_pengaduan_v2');
-            if (savedPengaduan) dataPengaduan = JSON.parse(savedPengaduan);
+        // INITIALIZE APP (READ FROM SUPABASE CLOUD)
+        async function initApp() {
+            Swal.fire({
+                title: 'Memuat data cloud...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
-            const savedKegiatan = localStorage.getItem('duham_kegiatan');
-            if (savedKegiatan) dataKegiatan = JSON.parse(savedKegiatan);
+            try {
+                // Fetch Data Pengaduan
+                const { data: fetchPengaduan, error: errP } = await supabaseClient
+                    .from('pengaduan')
+                    .select('*')
+                    .order('id', { ascending: false });
 
-            renderAll();
-        }
+                if (errP) console.error("Error Pengaduan:", errP);
+                else dataPengaduan = fetchPengaduan || [];
 
-        function saveLocalPengaduan() {
-            localStorage.setItem('duham_pengaduan_v2', JSON.stringify(dataPengaduan));
-        }
+                // Fetch Data Kegiatan
+                const { data: fetchKegiatan, error: errK } = await supabaseClient
+                    .from('kegiatan')
+                    .select('*')
+                    .order('id', { ascending: false });
 
-        function saveLocalKegiatan() {
-            localStorage.setItem('duham_kegiatan', JSON.stringify(dataKegiatan));
+                if (errK) console.error("Error Kegiatan:", errK);
+                else dataKegiatan = fetchKegiatan || [];
+
+                renderAll();
+                Swal.close();
+            } catch (err) {
+                console.error("Gagal terhubung ke Supabase", err);
+                Swal.fire('Error', 'Gagal memuat data dari Cloud Supabase.', 'error');
+            }
         }
 
         // RENDER ALL DATA
@@ -631,7 +598,7 @@
             // Kegiatan KPIs
             const totalKeg = dataKegiatan.length;
             const totalAnggaran = dataKegiatan.reduce((acc, curr) => acc + Number(curr.anggaran || 0), 0);
-            const lpjSelesai = dataKegiatan.filter(k => k.status_lpj.toLowerCase() === 'selesai').length;
+            const lpjSelesai = dataKegiatan.filter(k => (k.status_lpj || '').toLowerCase() === 'selesai').length;
 
             document.getElementById('statTotalKegiatan').innerText = totalKeg;
             document.getElementById('statTotalAnggaran').innerText = 'Rp ' + totalAnggaran.toLocaleString('id-ID');
@@ -663,7 +630,6 @@
             const instMap = {};
             dataPengaduan.forEach(d => {
                 const rawInst = d.instansi_terkait || 'Lainnya';
-                // Split berdasarkan karakter / atau ,
                 const parts = rawInst.split(/[\/,]/);
                 parts.forEach(part => {
                     const cleanName = part.trim();
@@ -754,7 +720,7 @@
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-semibold text-slate-500">${d.no || index + 1}</td>
+                        <td class="p-3 font-semibold text-slate-500">${index + 1}</td>
                         <td class="p-3 font-medium text-slate-800 whitespace-nowrap">${d.tanggal_permohonan || '-'}</td>
                         <td class="p-3">
                             <div class="font-semibold text-slate-800">${d.nama_pelapor || '-'}</div>
@@ -800,7 +766,7 @@
             renderTablePengaduan(filtered);
         }
 
-        // CRUD PENGADUAN
+        // CRUD PENGADUAN (SUPABASE INTEGRATION)
         function openModalPengaduan() {
             document.getElementById('formPengaduan').reset();
             document.getElementById('p_id').value = '';
@@ -812,17 +778,16 @@
             document.getElementById('modalPengaduan').classList.add('hidden');
         }
 
-        function savePengaduan(e) {
+        async function savePengaduan(e) {
             e.preventDefault();
-            const idx = document.getElementById('p_id').value;
+            const targetIndex = document.getElementById('p_id').value;
 
             const selectedTL = [];
             if (document.getElementById('tl_telaah').checked) selectedTL.push('Telaah');
             if (document.getElementById('tl_koordinasi').checked) selectedTL.push('Koordinasi dan Klarifikasi');
             if (document.getElementById('tl_rekomendasi').checked) selectedTL.push('Rekomendasi');
 
-            const newItem = {
-                no: idx !== '' ? dataPengaduan[idx].no : dataPengaduan.length + 1,
+            const itemPayload = {
                 tanggal_permohonan: document.getElementById('p_tanggal').value,
                 nama_pelapor: document.getElementById('p_pelapor').value,
                 sumber: document.getElementById('p_sumber').value,
@@ -835,16 +800,28 @@
                 status: document.getElementById('p_status').value
             };
 
-            if (idx !== '') {
-                dataPengaduan[idx] = newItem;
+            Swal.fire({ title: 'Menyimpan ke Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            if (targetIndex !== '') {
+                // UPDATE KE SUPABASE
+                const currentId = dataPengaduan[targetIndex].id;
+                const { error } = await supabaseClient.from('pengaduan').update(itemPayload).eq('id', currentId);
+                if (error) {
+                    Swal.fire('Error', 'Gagal memperbarui data!', 'error');
+                    return;
+                }
             } else {
-                dataPengaduan.unshift(newItem);
+                // INSERT KE SUPABASE
+                const { error } = await supabaseClient.from('pengaduan').insert([itemPayload]);
+                if (error) {
+                    Swal.fire('Error', 'Gagal menyimpan data baru!', 'error');
+                    return;
+                }
             }
 
-            saveLocalPengaduan();
-            renderAll();
             closeModalPengaduan();
-            Swal.fire({ title: 'Berhasil!', text: 'Data pengaduan tersimpan.', icon: 'success', timer: 1500, showConfirmButton: false });
+            await initApp();
+            Swal.fire({ title: 'Berhasil!', text: 'Data pengaduan tersimpan di Cloud Supabase.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
         function editPengaduan(index) {
@@ -872,20 +849,25 @@
         }
 
         function deletePengaduan(index) {
+            const item = dataPengaduan[index];
             Swal.fire({
                 title: 'Konfirmasi Hapus',
-                text: 'Apakah Anda yakin ingin menghapus data permohonan ini?',
+                text: 'Apakah Anda yakin ingin menghapus data permohonan ini dari Cloud?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Ya, Hapus'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    dataPengaduan.splice(index, 1);
-                    saveLocalPengaduan();
-                    renderAll();
-                    Swal.fire('Terhapus!', 'Data pengaduan telah dihapus.', 'success');
+                    Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    const { error } = await supabaseClient.from('pengaduan').delete().eq('id', item.id);
+                    if (error) {
+                        Swal.fire('Error', 'Gagal menghapus data!', 'error');
+                    } else {
+                        await initApp();
+                        Swal.fire('Terhapus!', 'Data pengaduan telah dihapus dari cloud.', 'success');
+                    }
                 }
             });
         }
@@ -899,21 +881,21 @@
             }
 
             tbody.innerHTML = dataKegiatan.map((k, index) => {
-                let badgeClass = k.status_lpj.toLowerCase() === 'selesai' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200";
+                let badgeClass = (k.status_lpj || '').toLowerCase() === 'selesai' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200";
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 font-semibold text-slate-500">${index + 1}</td>
-                        <td class="p-3 font-semibold text-slate-800">${k.nama}</td>
-                        <td class="p-3 text-slate-600 font-medium">${k.tanggal}</td>
-                        <td class="p-3 text-slate-600">${k.tempat}</td>
-                        <td class="p-3 text-slate-600 font-medium">${k.pic}</td>
-                        <td class="p-3 font-semibold text-slate-800">Rp ${Number(k.anggaran).toLocaleString('id-ID')}</td>
-                        <td class="p-3"><span class="px-2.5 py-1 rounded-lg border font-medium text-[11px] ${badgeClass}">${k.status_lpj}</span></td>
+                        <td class="p-3 font-semibold text-slate-800">${k.nama || '-'}</td>
+                        <td class="p-3 text-slate-600 font-medium">${k.tanggal || '-'}</td>
+                        <td class="p-3 text-slate-600">${k.tempat || '-'}</td>
+                        <td class="p-3 text-slate-600 font-medium">${k.pic || '-'}</td>
+                        <td class="p-3 font-semibold text-slate-800">Rp ${Number(k.anggaran || 0).toLocaleString('id-ID')}</td>
+                        <td class="p-3"><span class="px-2.5 py-1 rounded-lg border font-medium text-[11px] ${badgeClass}">${k.status_lpj || 'Proses'}</span></td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-1">
-                                <button onclick="editKegiatan(${k.id})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteKegiatan(${k.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="editKegiatan(${index})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteKegiatan(${index})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -921,7 +903,7 @@
             }).join('');
         }
 
-        // CRUD KEGIATAN
+        // CRUD KEGIATAN (SUPABASE INTEGRATION)
         function openModalKegiatan() {
             document.getElementById('formKegiatan').reset();
             document.getElementById('k_id').value = '';
@@ -933,11 +915,11 @@
             document.getElementById('modalKegiatan').classList.add('hidden');
         }
 
-        function saveKegiatan(e) {
+        async function saveKegiatan(e) {
             e.preventDefault();
-            const id = document.getElementById('k_id').value;
-            const newItem = {
-                id: id ? parseInt(id) : Date.now(),
+            const targetIndex = document.getElementById('k_id').value;
+
+            const itemPayload = {
                 nama: document.getElementById('k_nama').value,
                 tanggal: document.getElementById('k_tanggal').value,
                 tempat: document.getElementById('k_tempat').value,
@@ -946,50 +928,66 @@
                 status_lpj: document.getElementById('k_status_lpj').value
             };
 
-            if (id) {
-                const idx = dataKegiatan.findIndex(k => k.id == id);
-                if (idx !== -1) dataKegiatan[idx] = newItem;
+            Swal.fire({ title: 'Menyimpan ke Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            if (targetIndex !== '') {
+                // UPDATE KE SUPABASE
+                const currentId = dataKegiatan[targetIndex].id;
+                const { error } = await supabaseClient.from('kegiatan').update(itemPayload).eq('id', currentId);
+                if (error) {
+                    Swal.fire('Error', 'Gagal memperbarui data kegiatan!', 'error');
+                    return;
+                }
             } else {
-                dataKegiatan.unshift(newItem);
+                // INSERT KE SUPABASE
+                const { error } = await supabaseClient.from('kegiatan').insert([itemPayload]);
+                if (error) {
+                    Swal.fire('Error', 'Gagal menyimpan data kegiatan baru!', 'error');
+                    return;
+                }
             }
 
-            saveLocalKegiatan();
-            renderAll();
             closeModalKegiatan();
-            Swal.fire({ title: 'Berhasil!', text: 'Data kegiatan tersimpan.', icon: 'success', timer: 1500, showConfirmButton: false });
+            await initApp();
+            Swal.fire({ title: 'Berhasil!', text: 'Data kegiatan tersimpan di Cloud Supabase.', icon: 'success', timer: 1500, showConfirmButton: false });
         }
 
-        function editKegiatan(id) {
-            const item = dataKegiatan.find(k => k.id == id);
+        function editKegiatan(index) {
+            const item = dataKegiatan[index];
             if (!item) return;
 
-            document.getElementById('k_id').value = item.id;
-            document.getElementById('k_nama').value = item.nama;
-            document.getElementById('k_tanggal').value = item.tanggal;
-            document.getElementById('k_tempat').value = item.tempat;
-            document.getElementById('k_pic').value = item.pic;
-            document.getElementById('k_anggaran').value = item.anggaran;
-            document.getElementById('k_status_lpj').value = item.status_lpj;
+            document.getElementById('k_id').value = index;
+            document.getElementById('k_nama').value = item.nama || '';
+            document.getElementById('k_tanggal').value = item.tanggal || '';
+            document.getElementById('k_tempat').value = item.tempat || '';
+            document.getElementById('k_pic').value = item.pic || '';
+            document.getElementById('k_anggaran').value = item.anggaran || 0;
+            document.getElementById('k_status_lpj').value = item.status_lpj || 'Proses';
 
             document.getElementById('modalKegiatanTitle').innerText = 'Edit Data Kegiatan';
             document.getElementById('modalKegiatan').classList.remove('hidden');
         }
 
-        function deleteKegiatan(id) {
+        function deleteKegiatan(index) {
+            const item = dataKegiatan[index];
             Swal.fire({
                 title: 'Konfirmasi Hapus',
-                text: 'Apakah Anda yakin ingin menghapus data kegiatan ini?',
+                text: 'Apakah Anda yakin ingin menghapus data kegiatan ini dari Cloud?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Ya, Hapus'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    dataKegiatan = dataKegiatan.filter(k => k.id != id);
-                    saveLocalKegiatan();
-                    renderAll();
-                    Swal.fire('Terhapus!', 'Data kegiatan telah dihapus.', 'success');
+                    Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    const { error } = await supabaseClient.from('kegiatan').delete().eq('id', item.id);
+                    if (error) {
+                        Swal.fire('Error', 'Gagal menghapus kegiatan!', 'error');
+                    } else {
+                        await initApp();
+                        Swal.fire('Terhapus!', 'Data kegiatan telah dihapus dari cloud.', 'success');
+                    }
                 }
             });
         }
@@ -1002,8 +1000,8 @@
         function exportExcel() {
             const wb = XLSX.utils.book_new();
 
-            const wsPengaduan = XLSX.utils.json_to_sheet(dataPengaduan.map(d => ({
-                'No': d.no,
+            const wsPengaduan = XLSX.utils.json_to_sheet(dataPengaduan.map((d, i) => ({
+                'No': i + 1,
                 'Tanggal Permohonan': d.tanggal_permohonan,
                 'Nama Pelapor/Pihak': d.nama_pelapor,
                 'Sumber': d.sumber,
